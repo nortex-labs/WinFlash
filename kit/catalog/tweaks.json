@@ -1,0 +1,479 @@
+{
+  "_comment": "Каталог настроек. Новые настройки добавляйте ТОЛЬКО В КОНЕЦ списка: коды пресетов ссылаются на порядковый номер. Каждая настройка обратима: Apply-Profile.ps1 сохраняет старые значения в журнал отката. Поля: icon — имя иконки из Views\\Icons.xaml (без «ic.»); level — optimal (кнопка «Оптимально» и «Максимум») или max (только «Максимум»); win — 11 или 10, если настройка нужна только в этой версии; tasks — задачи планировщика, которые отключаются.",
+  "categories": [
+    { "id": "look",     "title": "Внешний вид" },
+    { "id": "start",    "title": "Пуск и панель задач" },
+    { "id": "explorer", "title": "Проводник и рабочий стол" },
+    { "id": "ads",      "title": "Реклама и навязчивые функции" },
+    { "id": "tracking", "title": "Слежка и телеметрия" },
+    { "id": "system",   "title": "Система" },
+    { "id": "input",    "title": "Мышь и клавиатура" },
+    { "id": "perf",     "title": "Производительность" },
+    { "id": "gaming",   "title": "Игры" }
+  ],
+  "tweaks": [
+    {
+      "id": "explorer.show-extensions", "category": "explorer", "icon": "document", "level": "optimal",
+      "title": "Показывать расширения файлов",
+      "description": "Видно, что файл называется photo.jpg.exe, а не photo.jpg.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "HideFileExt", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "explorer.open-this-pc", "category": "explorer", "icon": "laptop", "level": "optimal",
+      "title": "Проводник открывается на «Этот компьютер»",
+      "description": "Вместо «Главной» со списком недавних файлов.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "LaunchTo", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "taskbar.end-task", "category": "start", "icon": "dismiss_circle", "level": "optimal", "win": "11",
+      "title": "Пункт «Завершить задачу» на панели задач",
+      "description": "Зависшую программу можно закрыть правым кликом по значку.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings", "name": "TaskbarEndTask", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "privacy.no-ads", "category": "ads", "icon": "megaphone_off", "level": "optimal",
+      "title": "Без рекламы и «рекомендаций» Windows",
+      "description": "Отключает рекламу в меню «Пуск», советы и тихую установку рекламируемых приложений.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SilentInstalledAppsEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SystemPaneSuggestionsEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338388Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338389Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353694Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKLM:\\Software\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableWindowsConsumerFeatures", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "search.no-bing", "category": "ads", "icon": "search", "level": "optimal",
+      "title": "Поиск без результатов из интернета",
+      "description": "Поиск в «Пуске» ищет только на компьютере и работает быстрее.",
+      "reg": [ { "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer", "name": "DisableSearchBoxSuggestions", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "widgets.off", "category": "start", "icon": "news", "level": "optimal",
+      "title": "Отключить виджеты",
+      "description": "Убирает панель новостей и погоды, которая работает в фоне.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Dsh", "name": "AllowNewsAndInterests", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "copilot.off", "category": "ads", "icon": "bot", "level": "optimal",
+      "title": "Отключить Copilot",
+      "description": "Убирает встроенного ассистента Microsoft.",
+      "reg": [ { "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot", "name": "TurnOffWindowsCopilot", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "system.long-paths", "category": "system", "icon": "folder_open", "level": "optimal",
+      "title": "Длинные пути к файлам",
+      "description": "Снимает ограничение в 260 символов на путь к файлу.",
+      "reg": [ { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "name": "LongPathsEnabled", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "system.no-fast-startup", "category": "system", "icon": "power", "level": "optimal",
+      "title": "Отключить быстрый запуск",
+      "description": "Выключение становится настоящим: меньше странных проблем с драйверами и обновлениями.",
+      "reg": [ { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power", "name": "HiberbootEnabled", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "system.no-auto-bitlocker", "category": "system", "icon": "lock_closed", "level": "optimal",
+      "title": "Не шифровать диск автоматически",
+      "description": "Windows 11 сама включает шифрование; без записанного ключа данные можно потерять при сбое.",
+      "reg": [ { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\BitLocker", "name": "PreventDeviceEncryption", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "input.no-mouse-accel", "category": "input", "icon": "cursor", "level": "max",
+      "title": "Без ускорения мыши",
+      "description": "Курсор двигается строго пропорционально движению мыши. Важно для игр.",
+      "reg": [
+        { "path": "HKCU:\\Control Panel\\Mouse", "name": "MouseSpeed", "type": "String", "value": "0" },
+        { "path": "HKCU:\\Control Panel\\Mouse", "name": "MouseThreshold1", "type": "String", "value": "0" },
+        { "path": "HKCU:\\Control Panel\\Mouse", "name": "MouseThreshold2", "type": "String", "value": "0" }
+      ]
+    },
+    {
+      "id": "input.no-sticky-keys", "category": "input", "icon": "keyboard", "level": "optimal",
+      "title": "Отключить залипание клавиш",
+      "description": "Больше не будет окна после пятикратного нажатия Shift.",
+      "reg": [ { "path": "HKCU:\\Control Panel\\Accessibility\\StickyKeys", "name": "Flags", "type": "String", "value": "506" } ]
+    },
+    {
+      "id": "gaming.game-mode", "category": "gaming", "icon": "games", "level": "optimal",
+      "title": "Игровой режим",
+      "description": "Windows отдаёт приоритет игре и не ставит обновления во время игры.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\GameBar", "name": "AutoGameModeEnabled", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "gaming.no-background-capture", "category": "gaming", "icon": "record", "level": "optimal",
+      "title": "Отключить фоновую запись игр",
+      "description": "Xbox Game Bar перестаёт постоянно записывать игру в фоне и тратить ресурсы.",
+      "reg": [
+        { "path": "HKCU:\\System\\GameConfigStore", "name": "GameDVR_Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR", "name": "AppCaptureEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "gaming.gpu-scheduling", "category": "gaming", "icon": "developer_board", "level": "max",
+      "title": "Аппаратное планирование GPU",
+      "description": "Видеокарта сама управляет своей памятью. Немного снижает задержки на современных картах.",
+      "reg": [ { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "name": "HwSchMode", "type": "DWord", "value": 2 } ]
+    },
+    {
+      "id": "perf.no-startup-delay", "category": "perf", "icon": "timer", "level": "optimal",
+      "title": "Без задержки автозагрузки",
+      "description": "Программы из автозагрузки стартуют сразу, а не через 10 секунд после входа.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize", "name": "StartupDelayInMSec", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "perf.menu-fast", "category": "perf", "icon": "flash", "level": "optimal",
+      "title": "Мгновенные меню",
+      "description": "Убирает задержку перед открытием подменю.",
+      "reg": [ { "path": "HKCU:\\Control Panel\\Desktop", "name": "MenuShowDelay", "type": "String", "value": "0" } ]
+    },
+    {
+      "id": "look.dark-theme", "category": "look", "icon": "dark_theme",
+      "title": "Тёмная тема",
+      "description": "Тёмные окна, «Пуск» и панель задач.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "AppsUseLightTheme", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "SystemUsesLightTheme", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "look.no-transparency", "category": "look", "icon": "blur",
+      "title": "Без прозрачности",
+      "description": "Панель задач и меню становятся непрозрачными. Чуть меньше нагрузка на слабую видеокарту.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "EnableTransparency", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "look.accent-on-taskbar", "category": "look", "icon": "color",
+      "title": "Цвет акцента на панели задач и в «Пуске»",
+      "description": "Работает вместе с тёмной темой.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "ColorPrevalence", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "taskbar.align-left", "category": "start", "icon": "align_left", "win": "11",
+      "title": "Кнопка «Пуск» слева",
+      "description": "Значки панели задач прижаты к левому краю, как в Windows 10.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAl", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "taskbar.hide-search", "category": "start", "icon": "search",
+      "title": "Скрыть поле поиска на панели задач",
+      "description": "Поиск остаётся в «Пуске»: просто начните печатать.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "taskbar.hide-taskview", "category": "start", "icon": "window_multiple",
+      "title": "Скрыть кнопку «Представление задач»",
+      "description": "Виртуальные рабочие столы по-прежнему открываются через Win+Tab.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "taskbar.clock-seconds", "category": "start", "icon": "clock",
+      "title": "Секунды в часах на панели задач",
+      "description": "",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowSecondsInSystemClock", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "start.more-pins", "category": "start", "icon": "pin", "level": "optimal", "win": "11",
+      "title": "Больше закреплённых значков в «Пуске»",
+      "description": "Меньше места под «Рекомендуем», больше под ваши программы.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_Layout", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "start.no-recent", "category": "start", "icon": "history",
+      "title": "Не показывать недавние файлы в «Пуске»",
+      "description": "Раздел «Рекомендуем» не выдаёт, что вы открывали.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_TrackDocs", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_IrisRecommendations", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "explorer.classic-menu", "category": "explorer", "icon": "list", "level": "optimal", "win": "11",
+      "title": "Классическое контекстное меню",
+      "description": "Правый клик сразу показывает полное меню, без «Показать дополнительные параметры».",
+      "reg": [ { "path": "HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32", "name": "(default)", "type": "String", "value": "" } ]
+    },
+    {
+      "id": "explorer.this-pc-icon", "category": "explorer", "icon": "desktop", "level": "optimal",
+      "title": "Значок «Этот компьютер» на рабочем столе",
+      "description": "",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel", "name": "{20D04FE0-3AEA-1069-A2D8-08002B30309D}", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "explorer.show-hidden", "category": "explorer", "icon": "eye",
+      "title": "Показывать скрытые файлы",
+      "description": "",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Hidden", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "explorer.compact", "category": "explorer", "icon": "row_triple", "win": "11",
+      "title": "Компактный вид проводника",
+      "description": "Меньше отступов между файлами: больше помещается на экране.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "UseCompactMode", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "privacy.no-activity", "category": "tracking", "icon": "timeline", "level": "optimal",
+      "title": "Не собирать журнал действий",
+      "description": "Windows не запоминает, какие программы и файлы вы открывали.",
+      "reg": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "PublishUserActivities", "type": "DWord", "value": 0 },
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "UploadUserActivities", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "privacy.no-ad-id", "category": "tracking", "icon": "tag", "level": "optimal",
+      "title": "Отключить рекламный идентификатор",
+      "description": "Приложения не получают ваш ID для персональной рекламы.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "name": "Enabled", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "privacy.min-telemetry", "category": "tracking", "icon": "data_usage", "level": "optimal",
+      "title": "Минимальная телеметрия",
+      "description": "Windows отправляет в Microsoft только обязательные диагностические данные.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "AllowTelemetry", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "perf.no-animations", "category": "perf", "icon": "top_speed", "level": "max",
+      "title": "Без анимации окон",
+      "description": "Окна открываются и сворачиваются мгновенно. Заметно на слабых ПК.",
+      "reg": [ { "path": "HKCU:\\Control Panel\\Desktop\\WindowMetrics", "name": "MinAnimate", "type": "String", "value": "0" } ]
+    },
+    {
+      "id": "system.no-reboot-with-user", "category": "system", "icon": "arrow_clockwise", "level": "optimal",
+      "title": "Не перезагружать для обновлений, пока вы за ПК",
+      "description": "Windows не перезагрузится сама, если в систему кто-то вошёл.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "NoAutoRebootWithLoggedOnUsers", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "ads.lockscreen", "category": "ads", "icon": "image", "level": "optimal",
+      "title": "Без рекламы на экране блокировки",
+      "description": "Убирает «интересные факты», советы и рекламу поверх картинки экрана блокировки.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenOverlayEnabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338387Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads.settings", "category": "ads", "icon": "settings", "level": "optimal",
+      "title": "Без рекомендаций в «Параметрах»",
+      "description": "Приложение «Параметры» перестаёт предлагать сервисы Microsoft.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338393Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353696Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads.explorer", "category": "ads", "icon": "cloud", "level": "optimal",
+      "title": "Без рекламы OneDrive и Microsoft 365 в проводнике",
+      "description": "Проводник больше не показывает уведомления с предложениями подписок.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowSyncProviderNotifications", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "ads.welcome", "category": "ads", "icon": "hand_wave", "level": "optimal",
+      "title": "Без экрана «Давайте завершим настройку»",
+      "description": "Windows не будет после обновлений уговаривать войти в аккаунт Microsoft и купить подписки.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-310093Enabled", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement", "name": "ScoobeSystemSettingEnabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "ads.tailored", "category": "ads", "icon": "lightbulb", "level": "optimal",
+      "title": "Без «персонализированных» советов",
+      "description": "Microsoft не подбирает советы и рекламу по вашим диагностическим данным.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "name": "TailoredExperiencesWithDiagnosticDataEnabled", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "ads.start-account", "category": "ads", "icon": "person_circle", "level": "optimal", "win": "11",
+      "title": "Без уведомлений об аккаунте в «Пуске»",
+      "description": "Убирает значки и напоминания «войдите в аккаунт Microsoft» в меню «Пуск».",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_AccountNotifications", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "tracking.diagtrack", "category": "tracking", "icon": "cloud_arrow_up", "level": "max",
+      "title": "Отключить службу телеметрии",
+      "description": "Останавливает службу «Функциональные возможности для подключённых пользователей и телеметрия», которая отправляет данные в Microsoft.",
+      "reg": [
+        { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\DiagTrack", "name": "Start", "type": "DWord", "value": 4 },
+        { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\dmwappushservice", "name": "Start", "type": "DWord", "value": 4 }
+      ]
+    },
+    {
+      "id": "tracking.feedback", "category": "tracking", "icon": "person_feedback", "level": "optimal",
+      "title": "Не просить отзывы",
+      "description": "Windows не будет показывать опросы «Как вам Windows?».",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Siuf\\Rules", "name": "NumberOfSIUFInPeriod", "type": "DWord", "value": 0 },
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "DoNotShowFeedbackNotifications", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "tracking.typing", "category": "tracking", "icon": "keyboard", "level": "optimal",
+      "title": "Не собирать набранный текст и рукописный ввод",
+      "description": "Windows не отправляет примеры вашего ввода для «улучшения распознавания».",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\InputPersonalization", "name": "RestrictImplicitTextCollection", "type": "DWord", "value": 1 },
+        { "path": "HKCU:\\Software\\Microsoft\\InputPersonalization", "name": "RestrictImplicitInkCollection", "type": "DWord", "value": 1 },
+        { "path": "HKCU:\\Software\\Microsoft\\Input\\TIPC", "name": "Enabled", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "tracking.recall", "category": "tracking", "icon": "camera", "level": "optimal", "win": "11",
+      "title": "Отключить Recall (снимки экрана ИИ)",
+      "description": "Запрещает Windows периодически делать снимки экрана для поиска по истории. Актуально для ПК с Copilot+.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\WindowsAI", "name": "DisableAIDataAnalysis", "type": "DWord", "value": 1 },
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI", "name": "DisableAIDataAnalysis", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "tracking.app-launch", "category": "tracking", "icon": "apps", "level": "optimal",
+      "title": "Не запоминать запускаемые программы",
+      "description": "«Пуск» и поиск не отслеживают, что и как часто вы запускаете.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_TrackProgs", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "tracking.location", "category": "tracking", "icon": "location", "level": "max",
+      "title": "Отключить определение местоположения",
+      "description": "Ни одна программа не узнает, где вы. Перестанут работать погода по месту и «Найти устройство».",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\LocationAndSensors", "name": "DisableLocation", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "tracking.no-p2p-updates", "category": "tracking", "icon": "share", "level": "optimal",
+      "title": "Не раздавать обновления другим ПК",
+      "description": "Windows не будет отдавать скачанные обновления чужим компьютерам через ваш интернет.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization", "name": "DODownloadMode", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "perf.no-background-apps", "category": "perf", "icon": "apps", "level": "max",
+      "title": "Запретить фоновую работу приложений из Store",
+      "description": "Приложения из Microsoft Store не работают, пока закрыты. Обычные программы (Steam, Discord, Telegram) это не затрагивает.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy", "name": "LetAppsRunInBackground", "type": "DWord", "value": 2 } ]
+    },
+    {
+      "id": "gaming.no-power-throttling", "category": "gaming", "icon": "flash", "level": "max",
+      "title": "Отключить снижение частоты для фоновых программ",
+      "description": "Windows не замедляет свёрнутые программы — полезно для стримов и записи. На ноутбуке чуть больше расход батареи.",
+      "reg": [ { "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling", "name": "PowerThrottlingOff", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "gaming.responsiveness", "category": "gaming", "icon": "gauge", "level": "max",
+      "title": "Больше ресурсов процессора играм",
+      "description": "Фоновые мультимедиа-задачи получают 10% процессора вместо 20%.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "SystemResponsiveness", "type": "DWord", "value": 10 } ]
+    },
+    {
+      "id": "gaming.games-priority", "category": "gaming", "icon": "trophy", "level": "max",
+      "title": "Высокий приоритет для игр",
+      "description": "Планировщик Windows отдаёт играм более высокий приоритет процессора и видеокарты.",
+      "reg": [
+        { "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "GPU Priority", "type": "DWord", "value": 8 },
+        { "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Priority", "type": "DWord", "value": 6 },
+        { "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Scheduling Category", "type": "String", "value": "High" },
+        { "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "SFIO Priority", "type": "String", "value": "High" }
+      ]
+    },
+    {
+      "id": "taskbar.hide-copilot-button", "category": "start", "icon": "bot", "level": "optimal", "win": "11",
+      "title": "Скрыть кнопку Copilot на панели задач",
+      "description": "",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowCopilotButton", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "explorer.no-recent-quick-access", "category": "explorer", "icon": "history",
+      "title": "Не показывать недавние файлы в проводнике",
+      "description": "Раздел «Главная» не выдаёт посторонним, какие файлы вы открывали.",
+      "reg": [
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "name": "ShowRecent", "type": "DWord", "value": 0 },
+        { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "name": "ShowFrequent", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "look.accent-titlebars", "category": "look", "icon": "window",
+      "title": "Цвет акцента в заголовках окон",
+      "description": "Заголовки и рамки окон окрашиваются в цвет акцента.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\DWM", "name": "ColorPrevalence", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "tracking.ceip", "category": "tracking", "icon": "people_team", "level": "optimal",
+      "title": "Выйти из «Программы улучшения качества»",
+      "description": "Windows не отправляет статистику о том, как вы пользуетесь системой.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\SQMClient\\Windows", "name": "CEIPEnable", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "tracking.app-compat", "category": "tracking", "icon": "apps_list", "level": "optimal",
+      "title": "Не собирать список установленных программ",
+      "description": "Отключает сбор данных о совместимости: какие программы у вас стоят и как часто запускаются.",
+      "reg": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "name": "AITEnable", "type": "DWord", "value": 0 },
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "name": "DisableInventory", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "tracking.speech", "category": "tracking", "icon": "mic", "level": "optimal",
+      "title": "Не отправлять голос на распознавание в облако",
+      "description": "Голосовой ввод через Microsoft перестаёт работать, микрофон в остальных программах — работает.",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy", "name": "HasAccepted", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "tracking.limit-diag", "category": "tracking", "icon": "document_search", "level": "optimal",
+      "title": "Не отправлять журналы и дампы",
+      "description": "Windows не прикладывает к диагностике подробные журналы и снимки памяти.",
+      "reg": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "LimitDiagnosticLogCollection", "type": "DWord", "value": 1 },
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "LimitDumpCollection", "type": "DWord", "value": 1 }
+      ]
+    },
+    {
+      "id": "tracking.error-reporting", "category": "tracking", "icon": "bug", "level": "max",
+      "title": "Не отправлять отчёты об ошибках",
+      "description": "Когда программа падает, Windows не отправляет отчёт в Microsoft. Решения известных проблем тоже не будут приходить.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting", "name": "Disabled", "type": "DWord", "value": 1 } ]
+    },
+    {
+      "id": "tracking.tasks", "category": "tracking", "icon": "timer", "level": "max",
+      "title": "Отключить задачи телеметрии в планировщике",
+      "description": "Останавливает фоновые задачи, которые собирают данные о совместимости и использовании и отправляют их по расписанию.",
+      "reg": [],
+      "tasks": [
+        "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
+        "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser Exp",
+        "\\Microsoft\\Windows\\Application Experience\\MareBackup",
+        "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater",
+        "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator",
+        "\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip",
+        "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient",
+        "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload",
+        "\\Microsoft\\Windows\\Autochk\\Proxy"
+      ]
+    },
+    {
+      "id": "tracking.cortana", "category": "tracking", "icon": "globe", "level": "max",
+      "title": "Отключить Cortana и поиск в облаке",
+      "description": "Поиск Windows не отправляет запросы и содержимое облачных аккаунтов в Microsoft.",
+      "reg": [
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search", "name": "AllowCortana", "type": "DWord", "value": 0 },
+        { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search", "name": "AllowCloudSearch", "type": "DWord", "value": 0 }
+      ]
+    },
+    {
+      "id": "tracking.clipboard-cloud", "category": "tracking", "icon": "clipboard", "level": "max",
+      "title": "Не синхронизировать буфер обмена через облако",
+      "description": "Скопированный текст не уходит на серверы Microsoft и на другие ваши устройства. Журнал Win+V работает.",
+      "reg": [ { "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "AllowCrossDeviceClipboard", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "ads.notification-tips", "category": "ads", "icon": "lightbulb", "level": "optimal",
+      "title": "Без уведомлений с советами",
+      "description": "Windows не присылает всплывающие «Советы и предложения».",
+      "reg": [ { "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.Suggested", "name": "Enabled", "type": "DWord", "value": 0 } ]
+    },
+    {
+      "id": "input.numlock", "category": "input", "icon": "number_symbol", "level": "optimal",
+      "title": "Num Lock включён при входе",
+      "description": "Цифровая клавиатура сразу работает — удобно вводить ПИН-код и пароль.",
+      "reg": [ { "path": "HKCU:\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "type": "String", "value": "2" } ]
+    }
+  ]
+}

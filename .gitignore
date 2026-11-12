@@ -1,0 +1,18 @@
+# Сборка
+bin/
+obj/
+dist/
+*.user
+.vs/
+
+# Рабочая папка образа WinPE: файлы Windows ADK (Microsoft), ~1 ГБ — не публикуются
+winpe-build/
+
+# Личный выбор и файлы автоустановки (могут содержать пароль)
+kit/config/
+**/config/selected.json
+**/config/autounattend.xml
+
+# Установщики программ для офлайн-установки
+kit/Apps/*
+!kit/Apps/.gitkeep

@@ -1,0 +1,600 @@
+<Window x:Class="WinFlash.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinFlash — настройка будущей Windows"
+        Width="1220" Height="820" MinWidth="980" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg}" FontFamily="{StaticResource UiFont}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVis"/>
+        <Geometry x:Key="WindowsLogo">M0,0 H11 V11 H0 Z M13,0 H24 V11 H13 Z M0,13 H11 V24 H0 Z M13,13 H24 V24 H13 Z</Geometry>
+
+        <!-- Значок пункта: картинка программы или векторная иконка на подложке -->
+        <DataTemplate x:Key="ItemIcon">
+            <Grid Width="34" Height="34">
+                <Border CornerRadius="9" Background="{StaticResource CardHover}"
+                        Visibility="{Binding HasGeometry, Converter={StaticResource BoolVis}}">
+                    <Path Style="{StaticResource Glyph}" Data="{Binding IconGeometry}" Fill="{StaticResource Accent}" Width="19" Height="19"/>
+                </Border>
+                <Image Source="{Binding IconImage}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"
+                       Visibility="{Binding HasImage, Converter={StaticResource BoolVis}}"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Карточка элемента каталога -->
+        <DataTemplate x:Key="ItemTemplate">
+            <CheckBox Style="{StaticResource CardCheck}" IsChecked="{Binding IsChecked, Mode=TwoWay}" ToolTip="{Binding Description}" AutomationProperties.Name="{Binding Title}" AutomationProperties.HelpText="{Binding Description}" AutomationProperties.AutomationId="{Binding Id}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource ItemIcon}" VerticalAlignment="Top" Margin="0,1,12,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource Chip}" Margin="8,0,0,0"
+                                    Visibility="{Binding HasWinTag, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="{Binding WinTag}" FontSize="11" Foreground="{StaticResource Subtle}"/>
+                            </Border>
+                            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding Description}" FontSize="12.5" Foreground="{StaticResource Subtle}" TextWrapping="Wrap"
+                                   Margin="0,3,0,0" Visibility="{Binding HasDescription, Converter={StaticResource BoolVis}}"/>
+                    </StackPanel>
+                </Grid>
+            </CheckBox>
+        </DataTemplate>
+
+        <!-- Скрываем пункты для другой версии Windows (UniformGrid не оставляет под них места) -->
+        <Style x:Key="ItemContainer" TargetType="ContentPresenter">
+            <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BoolVis}}"/>
+        </Style>
+
+        <!-- Группа карточек с заголовком и кнопками «Все / Ничего» -->
+        <DataTemplate x:Key="GroupTemplate">
+            <StackPanel Margin="0,0,0,6" Visibility="{Binding IsVisible, Converter={StaticResource BoolVis}}">
+                <DockPanel Margin="2,14,10,10">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <Button Style="{StaticResource LinkButton}" Content="Выбрать все" Tag="{Binding}" Click="SelectAll_Click" AutomationProperties.Name="{Binding Title, StringFormat=Выбрать все: {0}}"/>
+                        <Button Style="{StaticResource LinkButton}" Content="Снять все" Tag="{Binding}" Click="SelectNone_Click" AutomationProperties.Name="{Binding Title, StringFormat=Снять все: {0}}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Counter}" FontSize="12.5" Foreground="{StaticResource Subtle}" Margin="10,1,0,0" VerticalAlignment="Center"/>
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource ItemTemplate}"
+                              ItemContainerStyle="{StaticResource ItemContainer}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Панель мини-пресетов вверху вкладки -->
+        <DataTemplate x:Key="TabTools">
+            <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                    CornerRadius="12" Padding="16,14" Margin="0,0,12,4">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding State}" FontSize="12.5" Foreground="{StaticResource Subtle}"
+                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <WrapPanel>
+                            <Button Style="{StaticResource ChipButton}" Tag="{Binding IsOptimal}" CommandParameter="optimal" Click="Level_Click" AutomationProperties.Name="{Binding Title, StringFormat=Оптимально: {0}}"
+                                    ToolTip="Подходит всем: безопасно и без сюрпризов">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource Glyph}" Data="{StaticResource ic.sparkle}" Fill="{StaticResource Accent}" Width="16" Height="16"/>
+                                    <TextBlock Text="Оптимально" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource ChipButton}" Tag="{Binding IsMax}" CommandParameter="max" Click="Level_Click" AutomationProperties.Name="{Binding Title, StringFormat=Максимум: {0}}"
+                                    Visibility="{Binding HasMax, Converter={StaticResource BoolVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource Glyph}" Data="{StaticResource ic.rocket}" Fill="#FF9F43" Width="16" Height="16"/>
+                                    <TextBlock Text="Максимум" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource ChipButton}" Tag="{Binding IsNone}" CommandParameter="none" Click="Level_Click" AutomationProperties.Name="{Binding Title, StringFormat=Снять всё: {0}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource Glyph}" Data="{StaticResource ic.dismiss}" Fill="{StaticResource Subtle}" Width="13" Height="13"/>
+                                    <TextBlock Text="Снять всё" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </DockPanel>
+                    <Grid Margin="2,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Оптимально —" FontSize="12.5" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                        <TextBlock Grid.Column="1" Text="{Binding OptimalHint}" FontSize="12.5" Foreground="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                        <TextBlock Grid.Row="1" Text="Максимум —" FontSize="12.5" FontWeight="SemiBold" Margin="0,0,6,0"
+                                   Visibility="{Binding HasMax, Converter={StaticResource BoolVis}}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MaxHint}" FontSize="12.5" Foreground="{StaticResource Subtle}" TextWrapping="Wrap"
+                                   Visibility="{Binding HasMax, Converter={StaticResource BoolVis}}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <Style x:Key="Page" TargetType="ScrollViewer">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="Padding" Value="40,32,30,24"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ============================== Боковое меню -->
+        <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="16,24,16,16">
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,0,24">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/WinFlash.ico" Width="36" Height="36" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="WinFlash" FontSize="17" FontWeight="SemiBold"/>
+                            <TextBlock Text="Настройка будущей Windows" FontSize="12" Foreground="{StaticResource Subtle}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock x:Name="VersionText" DockPanel.Dock="Bottom" FontSize="11.5" Foreground="{StaticResource Subtle}"
+                           Margin="8,0,0,0" TextWrapping="Wrap"/>
+
+                <!-- Текущий режим: пресет или «Свой режим» -->
+                <Border DockPanel.Dock="Bottom" Background="{StaticResource Card}" CornerRadius="10" Padding="12,10" Margin="0,0,0,14"
+                        BorderThickness="1" Cursor="Hand" MouseLeftButtonUp="Mode_Click" ToolTip="Перейти к выбору пресета">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCustom}" Value="True">
+                                    <Setter Property="BorderBrush" Value="#FF9F43"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel>
+                        <TextBlock Text="Режим" FontSize="11.5" Foreground="{StaticResource Subtle}"/>
+                        <TextBlock Text="{Binding ModeTitle}" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding WindowsTitle}" FontSize="12" Foreground="{StaticResource Subtle}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <ListBox x:Name="Nav" Background="Transparent" BorderThickness="0" SelectedIndex="0"
+                         ItemContainerStyle="{StaticResource NavItem}" SelectionChanged="Nav_SelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{StaticResource Glyph}" Data="{Binding Icon}" Fill="{StaticResource Subtle}" Width="18" Height="18"/>
+                                <TextBlock Text="{Binding Title}" FontSize="14" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- ============================== Содержимое -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TabControl x:Name="Pages" Background="Transparent" BorderThickness="0" Padding="0" SelectedIndex="0">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <!-- Скрытая панель вкладок: без неё содержимое не видно экранному диктору и UI Automation -->
+                            <TabPanel IsItemsHost="True" Visibility="Collapsed"/>
+                            <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"/>
+                        </Grid>
+                    </ControlTemplate>
+                </TabControl.Template>
+
+                <!-- 1. Windows -->
+                <TabItem AutomationProperties.Name="Windows">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="Какую Windows ставим?"/>
+                            <TextBlock x:Name="WindowsLead" Style="{StaticResource Lead}"
+                                       Text="На флешке можно держать обе версии. Пункты, которые нужны только в другой версии, скроются из списков."/>
+                            <ItemsControl ItemsSource="{Binding WindowsOptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Style="{StaticResource CardRadio}" GroupName="windows" AutomationProperties.Name="{Binding Title}" IsEnabled="{Binding IsAvailable}"
+                                                     IsChecked="{Binding IsSelected, Mode=OneWay}" Checked="Windows_Checked">
+                                            <StackPanel Margin="4,6">
+                                                <Path Data="{StaticResource WindowsLogo}" Width="54" Height="54" Stretch="Uniform" HorizontalAlignment="Left">
+                                                    <Path.Style>
+                                                        <Style TargetType="Path">
+                                                            <Setter Property="Fill" Value="#3B9CFF"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Version}" Value="10">
+                                                                    <Setter Property="Fill" Value="#2D7DD2"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                                                                    <Setter Property="Fill" Value="{StaticResource Line}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Path.Style>
+                                                </Path>
+                                                <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                                                <TextBlock Text="{Binding Tagline}" FontSize="13" Foreground="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,6,0,14"/>
+                                                <Border Height="1" Background="{StaticResource Line}" Margin="0,0,0,10"/>
+                                                <TextBlock Text="{Binding Status}" FontSize="12" TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{StaticResource Good}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                                                                    <Setter Property="Foreground" Value="{StaticResource Bad}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock x:Name="WindowsHint" FontSize="12.5" Foreground="{StaticResource Subtle}" TextWrapping="Wrap" Margin="2,8,12,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 2. Пресет -->
+                <TabItem AutomationProperties.Name="Пресет">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="С чего начнём?"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Выберите готовый пресет — он расставит галочки на всех шагах. Дважды щёлкните по карточке, чтобы увидеть всё, что он сделает. Если потом поменять любую галочку, включится «Свой режим»."/>
+                            <ItemsControl x:Name="PresetList" ItemsSource="{Binding Presets}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Style="{StaticResource CardRadio}" GroupName="presets" AutomationProperties.Name="{Binding Name}"
+                                                     IsChecked="{Binding IsSelected, Mode=OneWay}" Checked="Preset_Checked"
+                                                     MouseDoubleClick="Preset_DoubleClick" ToolTip="Двойной щелчок — посмотреть, что входит">
+                                            <DockPanel>
+                                                <Button DockPanel.Dock="Bottom" Style="{StaticResource LinkButton}" HorizontalAlignment="Left"
+                                                        Margin="-8,8,0,-6" Click="Preview_Click" AutomationProperties.Name="Что входит">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Path Style="{StaticResource Glyph}" Data="{StaticResource ic.eye}" Fill="{StaticResource Accent}" Width="15" Height="15"/>
+                                                        <TextBlock Text="Что входит" Foreground="{StaticResource Accent}" Margin="7,0,0,0"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <StackPanel>
+                                                    <DockPanel>
+                                                        <Border DockPanel.Dock="Right" Style="{StaticResource Chip}" Background="#3A2A14"
+                                                                Visibility="{Binding IsModified, Converter={StaticResource BoolVis}}">
+                                                            <TextBlock Text="изменён" FontSize="11" Foreground="#FF9F43"/>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold"/>
+                                                    </DockPanel>
+                                                    <TextBlock Text="{Binding Description}" FontSize="13" Foreground="{StaticResource Subtle}"
+                                                               TextWrapping="Wrap" Margin="0,6,0,12" MinHeight="54"/>
+                                                    <ItemsControl ItemsSource="{Binding Highlights}" Margin="0,0,0,12"
+                                                                  Visibility="{Binding HasHighlights, Converter={StaticResource BoolVis}}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="0,0,0,6">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="20"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Path Data="M1,5.5 L4.5,9 L11,1.5" Stroke="{StaticResource Good}" StrokeThickness="1.8"
+                                                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Margin="0,4,0,0"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding}" FontSize="13" TextWrapping="Wrap"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <Border Height="1" Background="{StaticResource Line}" Margin="0,0,0,10"/>
+                                                    <TextBlock Text="{Binding PowerTitle}" FontSize="12" Foreground="{StaticResource Subtle}"/>
+                                                    <TextBlock Text="{Binding Summary}" FontSize="12" Foreground="{StaticResource Accent}" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </RadioButton>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- «Свой режим» -->
+                            <Border Background="#1F1A12" BorderBrush="#FF9F43" BorderThickness="1.5" CornerRadius="12" Padding="18,14" Margin="0,2,12,0"
+                                    Visibility="{Binding IsCustom, Converter={StaticResource BoolVis}}">
+                                <DockPanel>
+                                    <Button x:Name="ResetPresetButton" DockPanel.Dock="Right" Content="Вернуть как в пресете" VerticalAlignment="Center"
+                                            Click="ResetPreset_Click" Margin="12,0,0,0"/>
+                                    <Path Style="{StaticResource Glyph}" Data="{StaticResource ic.wrench}" Fill="#FF9F43" Width="22" Height="22"
+                                          VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Свой режим" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding ModeDetail}" FontSize="13" Foreground="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+
+                            <TextBlock Style="{StaticResource H2}" Text="Есть код пресета?" Margin="2,26,0,4"/>
+                            <TextBlock Style="{StaticResource Lead}" Margin="2,0,0,10"
+                                       Text="Вставьте код, который вы сохранили раньше или получили от друга, — все галочки встанут как у него."/>
+                            <DockPanel Margin="0,0,12,0">
+                                <Button DockPanel.Dock="Right" Content="Загрузить" Margin="10,0,0,0" Click="LoadCode_Click"/>
+                                <TextBox x:Name="CodeInput" FontFamily="Consolas" KeyDown="CodeInput_KeyDown"/>
+                            </DockPanel>
+                            <TextBlock x:Name="CodeError" Foreground="{StaticResource Bad}" FontSize="13" Margin="2,8,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 3. Программы -->
+                <TabItem AutomationProperties.Name="Программы">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="Программы"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Отмеченное установится само после первого входа в Windows. Если установщик лежит в папке WinFlash\Apps на флешке — с флешки, иначе последняя версия скачается из интернета."/>
+                            <ContentPresenter Content="{Binding AppsTab}" ContentTemplate="{StaticResource TabTools}"/>
+                            <ItemsControl ItemsSource="{Binding AppGroups}" ItemTemplate="{StaticResource GroupTemplate}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 4. Встроенные приложения -->
+                <TabItem AutomationProperties.Name="Встроенные приложения">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="Встроенные приложения"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Отмеченные приложения Windows будут удалены. Любое из них потом можно вернуть из Microsoft Store."/>
+                            <ContentPresenter Content="{Binding RemoveTab}" ContentTemplate="{StaticResource TabTools}"/>
+                            <ItemsControl ItemsSource="{Binding RemoveGroups}" ItemTemplate="{StaticResource GroupTemplate}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 5. Реклама и слежка -->
+                <TabItem AutomationProperties.Name="Реклама и слежка">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="Реклама и слежка"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Windows показывает рекламу в «Пуске», на экране блокировки и в «Параметрах» и отправляет в Microsoft данные о том, как вы пользуетесь компьютером. Здесь это выключается. Безопасность и обновления не затрагиваются."/>
+                            <ContentPresenter Content="{Binding PrivacyTab}" ContentTemplate="{StaticResource TabTools}"/>
+                            <ItemsControl ItemsSource="{Binding PrivacyGroups}" ItemTemplate="{StaticResource GroupTemplate}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 6. Оптимизация -->
+                <TabItem AutomationProperties.Name="Оптимизация">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="Оптимизация"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Защитник Windows и обновления не отключаются — только то, что безопасно. Все изменения записываются в журнал, их можно откатить."/>
+                            <ContentPresenter Content="{Binding OptimizeTab}" ContentTemplate="{StaticResource TabTools}"/>
+                            <TextBlock Style="{StaticResource H2}" Text="Электропитание" Margin="2,16,0,10"/>
+                            <ItemsControl ItemsSource="{Binding PowerPlans}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Style="{StaticResource CardRadio}" GroupName="power" AutomationProperties.Name="{Binding Title}"
+                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Description}" FontSize="12.5" Foreground="{StaticResource Subtle}"
+                                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding OptimizeGroups}" ItemTemplate="{StaticResource GroupTemplate}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 7. Персонализация -->
+                <TabItem AutomationProperties.Name="Персонализация">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H1}" Text="Персонализация"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Как будут выглядеть «Пуск», панель задач, проводник и рабочий стол сразу после установки."/>
+                            <ContentPresenter Content="{Binding PersonalTab}" ContentTemplate="{StaticResource TabTools}"/>
+                            <ItemsControl ItemsSource="{Binding PersonalGroups}" ItemTemplate="{StaticResource GroupTemplate}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 8. Компьютер -->
+                <TabItem AutomationProperties.Name="Компьютер">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel MaxWidth="560" HorizontalAlignment="Left">
+                            <TextBlock Style="{StaticResource H1}" Text="Компьютер и учётная запись"/>
+                            <TextBlock Style="{StaticResource Lead}"
+                                       Text="Уже заполнено стандартными именами — можно ничего не менять."/>
+
+                            <TextBlock Text="Имя компьютера" FontSize="13" Foreground="{StaticResource Subtle}" Margin="2,0,0,6"/>
+                            <TextBox Text="{Binding ComputerName, UpdateSourceTrigger=PropertyChanged}" MaxLength="15"/>
+                            <TextBlock Text="До 15 символов: латиница, цифры и дефис. Так ПК будет виден в сети." FontSize="12"
+                                       Foreground="{StaticResource Subtle}" Margin="2,6,0,18"/>
+
+                            <TextBlock Text="Имя пользователя" FontSize="13" Foreground="{StaticResource Subtle}" Margin="2,0,0,6"/>
+                            <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" MaxLength="20"/>
+                            <TextBlock Text="Локальная учётная запись администратора. Вход в аккаунт Microsoft не потребуется. Не может совпадать с именем компьютера." FontSize="12"
+                                       Foreground="{StaticResource Subtle}" Margin="2,6,0,18" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="Пароль" FontSize="13" Foreground="{StaticResource Subtle}" Margin="2,0,0,6"/>
+                            <PasswordBox x:Name="PasswordInput" PasswordChanged="Password_Changed"/>
+                            <TextBlock FontSize="12" Foreground="{StaticResource Subtle}" Margin="2,6,0,0" TextWrapping="Wrap"
+                                       Text="Можно оставить пустым. Пароль хранится на флешке открытым текстом в файле автоустановки и никогда не попадает в код пресета."/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- 9. Готово -->
+                <TabItem AutomationProperties.Name="Готово">
+                    <ScrollViewer Style="{StaticResource Page}">
+                        <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+                            <TextBlock Style="{StaticResource H1}" Text="Всё готово"/>
+                            <TextBlock Style="{StaticResource Lead}" Text="{Binding Summary}"/>
+
+                            <Border Background="{StaticResource Card}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="Код вашего пресета" FontSize="13" Foreground="{StaticResource Subtle}"/>
+                                    <TextBox Text="{Binding Code, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="16"
+                                             Background="Transparent" BorderThickness="0" Padding="0,8" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Button Content="Скопировать код" Click="CopyCode_Click"/>
+                                        <TextBlock x:Name="CopiedText" Text="Скопировано" Foreground="{StaticResource Good}"
+                                                   VerticalAlignment="Center" Margin="12,0,0,0" Visibility="Collapsed"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Style="{StaticResource H2}" Text="Сохранить как пресет на флешке" Margin="2,24,0,8"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Сохранить пресет" Margin="10,0,0,0" Click="SavePreset_Click"/>
+                                <TextBox x:Name="PresetNameInput" Text="Мой пресет"/>
+                            </DockPanel>
+
+                            <TextBlock x:Name="SaveHeader" Style="{StaticResource H2}" Text="Записать на флешку" Margin="2,28,0,4"/>
+                            <TextBlock x:Name="TargetText" Style="{StaticResource Lead}" Margin="2,0,0,12"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="SaveButton" Style="{StaticResource PrimaryButton}" Content="Записать на флешку" Padding="26,12" Click="Save_Click"/>
+                                <Button x:Name="InstallButton" Style="{StaticResource PrimaryButton}" Content="Начать установку Windows" Padding="26,12"
+                                        Visibility="Collapsed" Click="Install_Click"/>
+                            </StackPanel>
+                            <TextBlock x:Name="SaveResult" FontSize="13" Margin="2,14,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+
+            <!-- ============================== Нижняя панель -->
+            <Border Grid.Row="1" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="40,14,30,14">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button x:Name="BackButton" Content="Назад" Click="Back_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="NextButton" Style="{StaticResource PrimaryButton}" Content="Далее" Click="Next_Click" MinWidth="110"/>
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Код пресета обновляется на лету" FontSize="11.5" Foreground="{StaticResource Subtle}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Code}" FontFamily="Consolas" FontSize="13" Foreground="{StaticResource Text}"
+                                       TextTrimming="CharacterEllipsis" MaxWidth="520" VerticalAlignment="Center"/>
+                            <Button Style="{StaticResource LinkButton}" Content="Копировать" Click="CopyCode_Click" Margin="6,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============================== Предпросмотр пресета (поверх всего окна) -->
+        <Grid x:Name="PreviewOverlay" Grid.ColumnSpan="2" Visibility="Collapsed" Panel.ZIndex="10">
+            <Border Background="#C0080A10" MouseLeftButtonDown="PreviewBackdrop_Click"/>
+            <Border x:Name="PreviewCard" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                    CornerRadius="16" MaxWidth="900" Margin="48,36" VerticalAlignment="Stretch">
+                <DockPanel>
+                    <!-- Шапка -->
+                    <Border DockPanel.Dock="Top" Padding="28,24,24,18" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" VerticalAlignment="Top" Click="ClosePreview_Click"
+                                    ToolTip="Закрыть (Esc)" Padding="8" AutomationProperties.Name="Закрыть предпросмотр (Esc)">
+                                <Path Style="{StaticResource Glyph}" Data="{StaticResource ic.dismiss}" Fill="{StaticResource Subtle}" Width="16" Height="16"/>
+                            </Button>
+                            <StackPanel>
+                                <TextBlock Text="Что сделает пресет" FontSize="12.5" Foreground="{StaticResource Subtle}"/>
+                                <TextBlock Text="{Binding Name}" FontSize="24" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding Description}" FontSize="13.5" Foreground="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Border Style="{StaticResource Chip}" Margin="0,0,8,0">
+                                        <TextBlock Text="{Binding PowerTitle}" FontSize="12"/>
+                                    </Border>
+                                    <Border Style="{StaticResource Chip}">
+                                        <TextBlock Text="{Binding Summary}" FontSize="12"/>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Кнопки -->
+                    <Border DockPanel.Dock="Bottom" Padding="28,16" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="Закрыть" Click="ClosePreview_Click" Margin="0,0,10,0" AutomationProperties.Name="Закрыть предпросмотр"/>
+                                <Button x:Name="PreviewChoose" Style="{StaticResource PrimaryButton}" Click="PreviewChoose_Click" Padding="22,9"/>
+                            </StackPanel>
+                            <TextBlock Text="Ничего не трогали — так и будет. Убрали галочку — включится «Свой режим»." FontSize="12.5"
+                                       Foreground="{StaticResource Subtle}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Список -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="28,8,20,18">
+                        <ItemsControl ItemsSource="{Binding Sections}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,14,0,4">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Path Style="{StaticResource Glyph}" Data="{Binding Icon}" Fill="{StaticResource Accent}" Width="18" Height="18"/>
+                                            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                            <Border Style="{StaticResource Chip}" Margin="10,0,0,0">
+                                                <TextBlock Text="{Binding Count}" FontSize="12" Foreground="{StaticResource Subtle}"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Hint}" FontSize="12.5" Foreground="{StaticResource Subtle}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <ItemsControl ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{StaticResource Card}" CornerRadius="9" Padding="10,7" Margin="0,0,8,8"
+                                                            ToolTip="{Binding Description}">
+                                                        <DockPanel>
+                                                            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource ItemIcon}" Margin="0,0,10,0"
+                                                                              VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Title}" FontSize="13" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                                        </DockPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
